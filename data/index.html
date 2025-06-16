@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>ESP32 Motor Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="header">
+    <img src="/icons/car.svg" alt="ESP32 Car" class="logo">
+    <h2>ESP32 DRV8833 Web Control</h2>
+    <div class="status">
+      <img src="/icons/wifi.svg" alt="WiFi" class="wifi-icon">
+      <span id="connectionStatus">Connected</span>
+    </div>
+  </div>
+  
+  <div class="control-panel">
+    <div class="button-row">
+      <button class="control-button forward" onclick="sendCommand('/forward')">
+        <img src="/icons/forward.svg" alt="Forward" class="button-icon">
+        <span>Forward</span>
+      </button>
+    </div>
+    <div class="button-row">
+      <button class="control-button left" onclick="sendCommand('/left')">
+        <img src="/icons/left.svg" alt="Left" class="button-icon">
+        <span>Left</span>
+      </button>
+      <button class="control-button stop" onclick="sendCommand('/stop')">
+        <img src="/icons/stop.svg" alt="Stop" class="button-icon">
+        <span>Stop</span>
+      </button>
+      <button class="control-button right" onclick="sendCommand('/right')">
+        <img src="/icons/right.svg" alt="Right" class="button-icon">
+        <span>Right</span>
+      </button>
+    </div>
+    <div class="button-row">
+      <button class="control-button backward" onclick="sendCommand('/backward')">
+        <img src="/icons/backward.svg" alt="Backward" class="button-icon">
+        <span>Backward</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="speed-container">
+    <div class="speed-header">
+      <img src="/icons/speed.svg" alt="Speed" class="speed-icon">
+      <label for="speedSlider">Speed Control</label>
+    </div>
+    <div class="slider-wrapper">
+      <input type="range" id="speedSlider" min="0" max="255" value="150" oninput="sendSpeed(this.value)">
+      <div class="speed-display">
+        <span id="speedValue">150</span>
+        <span class="speed-unit">/ 255</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

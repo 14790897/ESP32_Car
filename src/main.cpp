@@ -2,20 +2,21 @@
 #include <WiFi.h>
 #include <AsyncTCP.h> // For ESP32
 #include <ESPAsyncWebServer.h>
+#include <LittleFS.h>
 #include "secrets.h" // 包含你的配置 (WiFi凭证, API密钥等)
 
 // --- Pin Definitions ---
 // DRV8833 #1 - Controls Motor A and B
+
 #define IN1_PIN 2 // Motor A Direction 1
 #define IN2_PIN 3 // Motor A Direction 2
 #define IN3_PIN 10 // Motor B Direction 1
-#define IN4_PIN 6 // Motor B Direction 2
-
+#define IN4_PIN 6  // Motor B Direction 2
 // DRV8833 #2 - Controls Motor C and D
-#define IN5_PIN 5 // Motor C Direction 1
-#define IN6_PIN 4 // Motor C Direction 2
-#define IN7_PIN 8 // Motor D Direction 1
-#define IN8_PIN 9 // Motor D Direction 2
+#define IN5_PIN 1  // Motor C Direction 1
+#define IN6_PIN 12 // Motor C Direction 2
+#define IN7_PIN 18 // Motor D Direction 1
+#define IN8_PIN 19 // Motor D Direction 2
 
 // --- PWM Properties ---
 const int PWM_FREQ = 5000;
@@ -29,80 +30,35 @@ int motorBSpeed = 150;     // Default speed for Motor B (0-255)
 int motorCSpeed = 150;     // Default speed for Motor C (0-255)
 int motorDSpeed = 150;     // Default speed for Motor D (0-255)
 
-// --- HTML Web Page (PROGMEM) ---
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <title>ESP32 Motor Control</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; }
-   .control-button { padding: 15px 25px; font-size: 18px; margin: 5px; cursor: pointer; min-width: 100px; }
-    #speedValue { font-weight: bold; margin-left: 10px;}
-   .slider-container { margin-top: 20px; display: inline-block; }
-   .button-row { margin-bottom: 10px; }
-  </style>
-</head>
-<body>
-  <h2>ESP32 DRV8833 Web Control</h2>
-  <div class="button-row">
-    <button class="control-button" onclick="sendCommand('/forward')">Forward</button>
-  </div>
-  <div class="button-row">
-    <button class="control-button" onclick="sendCommand('/left')">Left</button>
-    <button class="control-button" onclick="sendCommand('/stop')">Stop</button>
-    <button class="control-button" onclick="sendCommand('/right')">Right</button>
-  </div>
-  <div class="button-row">
-    <button class="control-button" onclick="sendCommand('/backward')">Backward</button>
-  </div>
-  <div class="slider-container">
-    <label for="speedSlider">Speed:</label>
-    <input type="range" id="speedSlider" min="0" max="255" value="150" oninput="sendSpeed(this.value)" style="vertical-align: middle;">
-    <span id="speedValue">150</span>
-  </div>
-
-<script>
-  function sendCommand(commandPath) {
-    console.log("Sending command: " + commandPath);
-    fetch(commandPath)
-     .then(response => {
-        if (!response.ok) { console.error('Command failed:', response.status); }
-        return response.text();
-      })
-     .then(text => console.log('Server response:', text))
-     .catch(error => console.error('Fetch error:', error));
-  }
-
-  function sendSpeed(speedValue) {
-    document.getElementById('speedValue').innerText = speedValue;
-    const commandPath = '/speed?value=' + speedValue;
-    console.log("Sending speed: " + commandPath);
-    fetch(commandPath)
-      .then(response => {
-         if (!response.ok) { console.error('Speed command failed:', response.status); }
-         return response.text();
-       })
-     .then(text => console.log('Server response:', text))
-     .catch(error => console.error('Fetch error:', error));
-  }
-
-  // Update display value when slider is moved (using oninput for better responsiveness)
-  document.getElementById('speedSlider').addEventListener('input', function() {
-    document.getElementById('speedValue').innerText = this.value;
-  });
-
-  // Set initial display value on load
-  window.onload = () => {
-    const slider = document.getElementById('speedSlider');
-    document.getElementById('speedValue').innerText = slider.value;
-    motorASpeed = parseInt(slider.value); // Sync initial JS speed with C++ variable
-    motorBSpeed = parseInt(slider.value);
-  };
-</script>
-</body>
-</html>
-)rawliteral";
+// --- LittleFS Helper Functions ---
+String getContentType(String filename)
+{
+  if (filename.endsWith(".html"))
+    return "text/html";
+  else if (filename.endsWith(".css"))
+    return "text/css";
+  else if (filename.endsWith(".js"))
+    return "application/javascript";
+  else if (filename.endsWith(".svg"))
+    return "image/svg+xml";
+  else if (filename.endsWith(".png"))
+    return "image/png";
+  else if (filename.endsWith(".jpg"))
+    return "image/jpeg";
+  else if (filename.endsWith(".gif"))
+    return "image/gif";
+  else if (filename.endsWith(".ico"))
+    return "image/x-icon";
+  else if (filename.endsWith(".xml"))
+    return "text/xml";
+  else if (filename.endsWith(".pdf"))
+    return "application/x-pdf";
+  else if (filename.endsWith(".zip"))
+    return "application/x-zip";
+  else if (filename.endsWith(".gz"))
+    return "application/x-gzip";
+  return "text/plain";
+}
 
 // --- Motor Control Functions ---
 // Motor A control functions
@@ -262,6 +218,55 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("\nESP32 DRV8833 Web Control");
+  // Initialize LittleFS
+  if (!LittleFS.begin())
+  {
+    Serial.println("LittleFS Mount Failed");
+    return;
+  }
+  Serial.println("LittleFS mounted successfully");
+
+  // Check if required files exist
+  Serial.println("Checking LittleFS files:");
+  if (LittleFS.exists("/index.html"))
+  {
+    Serial.println("✓ /index.html found");
+  }
+  else
+  {
+    Serial.println("✗ /index.html NOT found");
+  }
+
+  if (LittleFS.exists("/css/style.css"))
+  {
+    Serial.println("✓ /css/style.css found");
+  }
+  else
+  {
+    Serial.println("✗ /css/style.css NOT found");
+  }
+
+  if (LittleFS.exists("/js/app.js"))
+  {
+    Serial.println("✓ /js/app.js found");
+  }
+  else
+  {
+    Serial.println("✗ /js/app.js NOT found");
+  }
+
+  // List all files in LittleFS for debugging
+  Serial.println("Files in LittleFS:");
+  File root = LittleFS.open("/");
+  File file = root.openNextFile();
+  while (file)
+  {
+    Serial.print("  ");
+    Serial.println(file.name());
+    file = root.openNextFile();
+  }
+  file.close();
+  root.close();
 
   // Initialize Motor Control Pins
   pinMode(IN1_PIN, OUTPUT);
@@ -315,12 +320,83 @@ void setup()
   // Print ESP32 Local IP Address
   Serial.print("IP Address: http://");
   Serial.println(WiFi.localIP());
-
   // --- Define Web Server Routes ---
+  // Root route: Serve the HTML page from LittleFS
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { 
+              if(LittleFS.exists("/index.html")) {
+                request->send(LittleFS, "/index.html", "text/html");
+              } else {
+                request->send(404, "text/plain", "index.html not found in LittleFS");
+              } });
 
-  // Root route: Serve the HTML page
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send(200, "text/html", index_html); // Send the HTML page
+  // Serve CSS files
+  server.on("/css/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
+            { 
+              if(LittleFS.exists("/css/style.css")) {
+                request->send(LittleFS, "/css/style.css", "text/css");
+              } else {
+                request->send(404, "text/plain", "CSS file not found");
+              } });
+
+  // Serve JavaScript files
+  server.on("/js/app.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            { 
+              if(LittleFS.exists("/js/app.js")) {
+                request->send(LittleFS, "/js/app.js", "application/javascript");
+              } else {
+                request->send(404, "text/plain", "JS file not found");
+              } });
+  // Handle favicon requests (both .ico and .svg)
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
+            { 
+              if(LittleFS.exists("/favicon.ico")) {
+                request->send(LittleFS, "/favicon.ico", "image/x-icon");
+              } else {
+                request->send(204); // No Content
+              } });
+              
+  server.on("/favicon.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { 
+              if(LittleFS.exists("/favicon.svg")) {
+                request->send(LittleFS, "/favicon.svg", "image/svg+xml");
+              } else {
+                request->send(204); // No Content
+              } });
+
+  // Serve SVG icons
+  server.on("/icons/forward.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/forward.svg", "image/svg+xml"); });
+  server.on("/icons/backward.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/backward.svg", "image/svg+xml"); });
+  server.on("/icons/left.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/left.svg", "image/svg+xml"); });
+  server.on("/icons/right.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/right.svg", "image/svg+xml"); });
+  server.on("/icons/stop.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/stop.svg", "image/svg+xml"); });
+  server.on("/icons/speed.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/speed.svg", "image/svg+xml"); });
+  server.on("/icons/car.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/car.svg", "image/svg+xml"); });
+  server.on("/icons/wifi.svg", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(LittleFS, "/icons/wifi.svg", "image/svg+xml"); });
+
+  // Status check endpoint for connection monitoring
+  server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String status = "{";
+    status += "\"wifi_connected\":" + String(WiFi.status() == WL_CONNECTED ? "true" : "false") + ",";
+    status += "\"ip\":\"" + WiFi.localIP().toString() + "\",";
+    status += "\"rssi\":" + String(WiFi.RSSI()) + ",";
+    status += "\"motor_speeds\":{";
+    status += "\"A\":" + String(motorASpeed) + ",";
+    status += "\"B\":" + String(motorBSpeed) + ",";
+    status += "\"C\":" + String(motorCSpeed) + ",";
+    status += "\"D\":" + String(motorDSpeed);
+    status += "},";
+    status += "\"uptime\":" + String(millis());
+    status += "}";
+    request->send(200, "application/json", status);
   });
 
   // Movement control routes

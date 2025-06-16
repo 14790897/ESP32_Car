@@ -1,0 +1,241 @@
+body { 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+  text-align: center; 
+  margin: 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+h2 {
+  color: #333;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.wifi-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.control-panel {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  margin-bottom: 30px;
+  display: inline-block;
+}
+
+.control-button { 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  font-size: 16px; 
+  margin: 8px; 
+  cursor: pointer; 
+  min-width: 120px;
+  background: linear-gradient(145deg, #f0f0f0, #cacaca);
+  color: #333;
+  border: none;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  font-weight: 500;
+}
+
+.control-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.control-button:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.control-button.forward:hover { background: linear-gradient(145deg, #4CAF50, #45a049); color: white; }
+.control-button.backward:hover { background: linear-gradient(145deg, #FF9800, #F57C00); color: white; }
+.control-button.left:hover { background: linear-gradient(145deg, #2196F3, #1976D2); color: white; }
+.control-button.right:hover { background: linear-gradient(145deg, #9C27B0, #7B1FA2); color: white; }
+.control-button.stop:hover { background: linear-gradient(145deg, #F44336, #D32F2F); color: white; }
+
+.button-icon {
+  width: 32px;
+  height: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.button-row { 
+  margin-bottom: 15px; 
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.speed-container {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  display: inline-block;
+  min-width: 300px;
+}
+
+.speed-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.speed-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.slider-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+#speedSlider {
+  width: 250px;
+  height: 8px;
+  background: linear-gradient(to right, #f0f0f0 0%, #4CAF50 100%);
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+#speedSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(145deg, #4CAF50, #45a049);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+}
+
+#speedSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+#speedSlider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(145deg, #4CAF50, #45a049);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.speed-display {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.speed-unit {
+  font-size: 16px;
+  color: #666;
+  font-weight: 400;
+}
+
+label {
+  font-size: 18px;
+  color: #333;
+  margin-right: 10px;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .control-panel {
+    padding: 20px;
+  }
+  
+  .control-button {
+    min-width: 100px;
+    padding: 15px;
+  }
+  
+  .button-row {
+    flex-wrap: wrap;
+  }
+  
+  .speed-container {
+    min-width: 250px;
+  }
+  
+  #speedSlider {
+    width: 200px;
+  }
+}
+
+/* Loading animation */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Connection status indicators */
+.status.connected { color: #4CAF50; }
+.status.connecting { color: #FF9800; }
+.status.disconnected { color: #F44336; }
