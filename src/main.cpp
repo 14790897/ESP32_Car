@@ -66,21 +66,20 @@ String getContentType(String filename)
 // Motor A control functions
 void motorA_Forward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN1_PIN, HIGH);
-  analogWrite(IN2_PIN, 255 - speed); // PWM on IN2 (speed control)
+  digitalWrite(IN2_PIN, LOW);
+  // Set speed by analogWrite only on one pin if needed for speed control
+  // For basic operation, we'll use digitalWrite only
 }
 
 void motorA_Backward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN1_PIN, LOW);
-  analogWrite(IN2_PIN, speed); // PWM on IN2 (speed control)
+  digitalWrite(IN2_PIN, HIGH);
 }
 
 void motorA_Stop()
 {
-  // Stop by setting both direction pins to LOW
   digitalWrite(IN1_PIN, LOW);
   digitalWrite(IN2_PIN, LOW);
 }
@@ -88,21 +87,18 @@ void motorA_Stop()
 // Motor B control functions
 void motorB_Forward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN3_PIN, HIGH);
-  analogWrite(IN4_PIN, 255 - speed); // PWM on IN4 (speed control)
+  digitalWrite(IN4_PIN, LOW);
 }
 
 void motorB_Backward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN3_PIN, LOW);
-  analogWrite(IN4_PIN, speed); // PWM on IN4 (speed control)
+  digitalWrite(IN4_PIN, HIGH);
 }
 
 void motorB_Stop()
 {
-  // Stop by setting both direction pins to LOW
   digitalWrite(IN3_PIN, LOW);
   digitalWrite(IN4_PIN, LOW);
 }
@@ -110,21 +106,18 @@ void motorB_Stop()
 // Motor C control functions
 void motorC_Forward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN5_PIN, HIGH);
-  analogWrite(IN6_PIN, 255 - speed); // PWM on IN6 (speed control)
+  digitalWrite(IN6_PIN, LOW);
 }
 
 void motorC_Backward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN5_PIN, LOW);
-  analogWrite(IN6_PIN, speed); // PWM on IN6 (speed control)
+  digitalWrite(IN6_PIN, HIGH);
 }
 
 void motorC_Stop()
 {
-  // Stop by setting both direction pins to LOW
   digitalWrite(IN5_PIN, LOW);
   digitalWrite(IN6_PIN, LOW);
 }
@@ -132,21 +125,18 @@ void motorC_Stop()
 // Motor D control functions
 void motorD_Forward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN7_PIN, HIGH);
-  analogWrite(IN8_PIN, 255 - speed); // PWM on IN8 (speed control)
+  digitalWrite(IN8_PIN, LOW);
 }
 
 void motorD_Backward(int speed)
 {
-  // Use digital pins for direction and PWM for speed control
   digitalWrite(IN7_PIN, LOW);
-  analogWrite(IN8_PIN, speed); // PWM on IN8 (speed control)
+  digitalWrite(IN8_PIN, HIGH);
 }
 
 void motorD_Stop()
 {
-  // Stop by setting both direction pins to LOW
   digitalWrite(IN7_PIN, LOW);
   digitalWrite(IN8_PIN, LOW);
 }
@@ -195,7 +185,7 @@ void motorStop()
   motorB_Stop();
   motorC_Stop();
   motorD_Stop();
-  Serial.println("Motor Stopped");
+  Serial.println("All Motors Stopped");
 }
 
 void setMotorSpeed(int speed)
