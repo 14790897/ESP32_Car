@@ -66,89 +66,89 @@ String getContentType(String filename)
 // Motor A control functions
 void motorA_Forward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(0, speed);  // Use channel 0 for IN1_PIN (LOW)
-  ledcWrite(1, 0);      // Use channel 1 for IN2_PIN (HIGH)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN1_PIN, HIGH);
+  analogWrite(IN2_PIN, 255 - speed); // PWM on IN2 (speed control)
 }
 
 void motorA_Backward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(0, 0);      // Use channel 0 for IN1_PIN (HIGH)
-  ledcWrite(1, speed);  // Use channel 1 for IN2_PIN (LOW)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN1_PIN, LOW);
+  analogWrite(IN2_PIN, speed); // PWM on IN2 (speed control)
 }
 
 void motorA_Stop()
 {
   // Stop by setting both direction pins to LOW
-  ledcWrite(0, 0);  // Use channel 0 for IN1_PIN
-  ledcWrite(1, 0);  // Use channel 1 for IN2_PIN
+  digitalWrite(IN1_PIN, LOW);
+  digitalWrite(IN2_PIN, LOW);
 }
 
 // Motor B control functions
 void motorB_Forward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(2, speed);  // Use channel 2 for IN3_PIN (LOW)
-  ledcWrite(3, 0);      // Use channel 3 for IN4_PIN (HIGH)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN3_PIN, HIGH);
+  analogWrite(IN4_PIN, 255 - speed); // PWM on IN4 (speed control)
 }
 
 void motorB_Backward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(2, 0);      // Use channel 2 for IN3_PIN (HIGH)
-  ledcWrite(3, speed);  // Use channel 3 for IN4_PIN (LOW)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN3_PIN, LOW);
+  analogWrite(IN4_PIN, speed); // PWM on IN4 (speed control)
 }
 
 void motorB_Stop()
 {
   // Stop by setting both direction pins to LOW
-  ledcWrite(2, 0);  // Use channel 2 for IN3_PIN
-  ledcWrite(3, 0);  // Use channel 3 for IN4_PIN
+  digitalWrite(IN3_PIN, LOW);
+  digitalWrite(IN4_PIN, LOW);
 }
 
 // Motor C control functions
 void motorC_Forward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(4, speed);  // Use channel 4 for IN5_PIN (LOW)
-  ledcWrite(5, 0);      // Use channel 5 for IN6_PIN (HIGH)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN5_PIN, HIGH);
+  analogWrite(IN6_PIN, 255 - speed); // PWM on IN6 (speed control)
 }
 
 void motorC_Backward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(4, 0);      // Use channel 4 for IN5_PIN (HIGH)
-  ledcWrite(5, speed);  // Use channel 5 for IN6_PIN (LOW)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN5_PIN, LOW);
+  analogWrite(IN6_PIN, speed); // PWM on IN6 (speed control)
 }
 
 void motorC_Stop()
 {
   // Stop by setting both direction pins to LOW
-  ledcWrite(4, 0);  // Use channel 4 for IN5_PIN
-  ledcWrite(5, 0);  // Use channel 5 for IN6_PIN
+  digitalWrite(IN5_PIN, LOW);
+  digitalWrite(IN6_PIN, LOW);
 }
 
 // Motor D control functions
 void motorD_Forward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(6, speed);  // Use channel 6 for IN7_PIN (LOW)
-  ledcWrite(7, 0);      // Use channel 7 for IN8_PIN (HIGH)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN7_PIN, HIGH);
+  analogWrite(IN8_PIN, 255 - speed); // PWM on IN8 (speed control)
 }
 
 void motorD_Backward(int speed)
 {
-  // PWM on direction pins for speed control
-  ledcWrite(6, 0);      // Use channel 6 for IN7_PIN (HIGH)
-  ledcWrite(7, speed);  // Use channel 7 for IN8_PIN (LOW)
+  // Use digital pins for direction and PWM for speed control
+  digitalWrite(IN7_PIN, LOW);
+  analogWrite(IN8_PIN, speed); // PWM on IN8 (speed control)
 }
 
 void motorD_Stop()
 {
   // Stop by setting both direction pins to LOW
-  ledcWrite(6, 0);  // Use channel 6 for IN7_PIN
-  ledcWrite(7, 0);  // Use channel 7 for IN8_PIN
+  digitalWrite(IN7_PIN, LOW);
+  digitalWrite(IN8_PIN, LOW);
 }
 
 void motorForward()
@@ -383,7 +383,6 @@ void setup()
   }
   file.close();
   root.close();
-
   // Initialize Motor Control Pins
   pinMode(IN1_PIN, OUTPUT);
   pinMode(IN2_PIN, OUTPUT);
@@ -394,30 +393,15 @@ void setup()
   pinMode(IN7_PIN, OUTPUT);
   pinMode(IN8_PIN, OUTPUT);
 
-  // Initialize PWM channels for all direction pins
-  // Motor A
-  ledcSetup(0, PWM_FREQ, PWM_RESOLUTION);  // Channel 0 for IN1_PIN
-  ledcSetup(1, PWM_FREQ, PWM_RESOLUTION);  // Channel 1 for IN2_PIN
-  ledcAttachPin(IN1_PIN, 0);
-  ledcAttachPin(IN2_PIN, 1);
-
-  // Motor B
-  ledcSetup(2, PWM_FREQ, PWM_RESOLUTION);  // Channel 2 for IN3_PIN
-  ledcSetup(3, PWM_FREQ, PWM_RESOLUTION);  // Channel 3 for IN4_PIN
-  ledcAttachPin(IN3_PIN, 2);
-  ledcAttachPin(IN4_PIN, 3);
-
-  // Motor C
-  ledcSetup(4, PWM_FREQ, PWM_RESOLUTION);  // Channel 4 for IN5_PIN
-  ledcSetup(5, PWM_FREQ, PWM_RESOLUTION);  // Channel 5 for IN6_PIN
-  ledcAttachPin(IN5_PIN, 4);
-  ledcAttachPin(IN6_PIN, 5);
-
-  // Motor D
-  ledcSetup(6, PWM_FREQ, PWM_RESOLUTION);  // Channel 6 for IN7_PIN
-  ledcSetup(7, PWM_FREQ, PWM_RESOLUTION);  // Channel 7 for IN8_PIN
-  ledcAttachPin(IN7_PIN, 6);
-  ledcAttachPin(IN8_PIN, 7);
+  // Initialize all motor pins to LOW (stopped)
+  digitalWrite(IN1_PIN, LOW);
+  digitalWrite(IN2_PIN, LOW);
+  digitalWrite(IN3_PIN, LOW);
+  digitalWrite(IN4_PIN, LOW);
+  digitalWrite(IN5_PIN, LOW);
+  digitalWrite(IN6_PIN, LOW);
+  digitalWrite(IN7_PIN, LOW);
+  digitalWrite(IN8_PIN, LOW);
   // Stop motors initially
   motorStop();
   setMotorSpeed(150); // Set initial speed variable from slider default
@@ -593,29 +577,33 @@ void setup()
     message += "/test/motor/D - Test Motor D\n";
     message += "/test/motor/all - Test All Motors\n";
     request->send(200, "text/plain", message); });
-
   server.on("/test/motor/A", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+    Serial.println("Received request: /test/motor/A");
     testMotor('A');
     request->send(200, "text/plain", "Motor A test completed - check serial monitor"); });
 
   server.on("/test/motor/B", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+    Serial.println("Received request: /test/motor/B");
     testMotor('B');
     request->send(200, "text/plain", "Motor B test completed - check serial monitor"); });
 
   server.on("/test/motor/C", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+    Serial.println("Received request: /test/motor/C");
     testMotor('C');
     request->send(200, "text/plain", "Motor C test completed - check serial monitor"); });
 
   server.on("/test/motor/D", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+    Serial.println("Received request: /test/motor/D");
     testMotor('D');
     request->send(200, "text/plain", "Motor D test completed - check serial monitor"); });
 
   server.on("/test/motor/all", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+    Serial.println("Received request: /test/motor/all");
     testAllMotors();
     request->send(200, "text/plain", "All motor tests completed - check serial monitor"); });
 

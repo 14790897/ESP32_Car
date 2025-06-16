@@ -130,7 +130,6 @@ Motor D: GPIO 21 (IN7), GPIO 22 (IN8)
   </div>
   
   <a href="/" class="back-link">← Back to Control</a>
-
   <script>
     function showStatus(message) {
       const statusDiv = document.getElementById('status');
@@ -140,32 +139,65 @@ Motor D: GPIO 21 (IN7), GPIO 22 (IN8)
     
     function testMotor(motor) {
       showStatus(`Testing Motor ${motor}... (check serial monitor for details)`);
-      fetch(`/test/motor/${motor}`)
-        .then(response => response.text())
+      
+      const url = `/test/motor/${motor}`;
+      console.log(`Sending request to: ${url}`);
+      
+      fetch(url)
+        .then(response => {
+          console.log(`Response status: ${response.status}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.text();
+        })
         .then(text => {
+          console.log(`Response text: ${text}`);
           showStatus(`Motor ${motor} test completed: ${text}`);
         })
         .catch(error => {
-          showStatus(`Error testing Motor ${motor}: ${error}`);
+          console.error(`Error testing Motor ${motor}:`, error);
+          showStatus(`Error testing Motor ${motor}: ${error.message}`);
         });
     }
     
     function testAllMotors() {
       showStatus('Testing all motors... (this will take about 30 seconds)');
-      fetch('/test/motor/all')
-        .then(response => response.text())
+      
+      const url = '/test/motor/all';
+      console.log(`Sending request to: ${url}`);
+      
+      fetch(url)
+        .then(response => {
+          console.log(`Response status: ${response.status}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.text();
+        })
         .then(text => {
+          console.log(`Response text: ${text}`);
           showStatus(`All motor tests completed: ${text}`);
         })
         .catch(error => {
-          showStatus(`Error testing motors: ${error}`);
+          console.error(`Error testing motors:`, error);
+          showStatus(`Error testing motors: ${error.message}`);
         });
     }
     
     function getStatus() {
+      showStatus('Getting device status...');
+      
       fetch('/status')
-        .then(response => response.json())
+        .then(response => {
+          console.log(`Status response: ${response.status}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
         .then(data => {
+          console.log('Status data:', data);
           const statusText = `Device Status:
 IP: ${data.ip}
 mDNS: ${data.mdns_hostname}
@@ -176,9 +208,28 @@ Uptime: ${Math.round(data.uptime / 1000)} seconds`;
           showStatus(statusText);
         })
         .catch(error => {
-          showStatus(`Error getting status: ${error}`);
+          console.error(`Error getting status:`, error);
+          showStatus(`Error getting status: ${error.message}`);
         });
     }
+    
+    // Test network connectivity on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Diagnostics page loaded');
+      showStatus('Testing connection...');
+      
+      fetch('/status')
+        .then(response => {
+          if (response.ok) {
+            showStatus('Connection OK - Ready for motor tests');
+          } else {
+            showStatus(`Connection issue: HTTP ${response.status}`);
+          }
+        })
+        .catch(error => {
+          showStatus(`Connection failed: ${error.message}`);
+        });
+    });
   </script>
 </body>
 </html>
