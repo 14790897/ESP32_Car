@@ -41,6 +41,13 @@ echo ===========================================
 echo Deployment completed successfully!
 echo ===========================================
 echo.
+echo Your ESP32 Car is now accessible via:
+echo   1. mDNS: http://esp32car.local
+echo   2. IP Address: (check serial monitor)
+echo.
+echo Note: For mDNS to work on Windows, you may need
+echo Bonjour service (installed with iTunes).
+echo.
 echo Opening serial monitor...
 pio device monitor
 

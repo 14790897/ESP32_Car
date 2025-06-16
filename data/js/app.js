@@ -219,28 +219,40 @@ document.addEventListener('touchend', function(event) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-  const slider = document.getElementById('speedSlider');
-  const speedValue = document.getElementById('speedValue');
-  
+  const slider = document.getElementById("speedSlider");
+  const speedValue = document.getElementById("speedValue");
+
   // Set initial display value and slider background
   speedValue.innerText = slider.value;
   const initialPercentage = (slider.value / 255) * 100;
   slider.style.background = `linear-gradient(to right, #f0f0f0 0%, #4CAF50 ${initialPercentage}%, #f0f0f0 ${initialPercentage}%)`;
-  
+
   // Update slider background on input
-  slider.addEventListener('input', function() {
+  slider.addEventListener("input", function () {
     const percentage = (this.value / 255) * 100;
     this.style.background = `linear-gradient(to right, #f0f0f0 0%, #4CAF50 ${percentage}%, #f0f0f0 ${percentage}%)`;
     speedValue.innerText = this.value;
   });
-  
-  // Initial connection check
-  fetch('/status')
-    .then(() => updateConnectionStatus('connected'))
-    .catch(() => updateConnectionStatus('disconnected'));
-  
-  console.log('ESP32 Car Control Interface Loaded');
-  console.log('Keyboard Controls:');
-  console.log('- WASD or Arrow Keys for movement');
-  console.log('- Spacebar to stop');
+
+  // Initial connection check and get device info
+  fetch("/status")
+    .then((response) => response.json())
+    .then((data) => {
+      updateConnectionStatus("connected");
+
+      // Update mDNS hostname display
+      if (data.mdns_hostname) {
+        document.getElementById("mdnsHostname").textContent =
+          data.mdns_hostname;
+      }
+
+      console.log("Device Info:", data);
+    })
+    .catch(() => updateConnectionStatus("disconnected"));
+
+  console.log("ESP32 Car Control Interface Loaded");
+  console.log("Keyboard Controls:");
+  console.log("- WASD or Arrow Keys for movement");
+  console.log("- Spacebar to stop");
+  console.log("- Access via mDNS: esp32car.local");
 });

@@ -75,6 +75,10 @@ echo ===========================================
 echo 1. To upload filesystem: pio run --target uploadfs
 echo 2. To build and upload:   deploy.bat
 echo 3. To monitor serial:     pio device monitor
+echo 4. To test mDNS:         test_mdns.bat
+echo.
+echo After deployment, access your car at:
+echo   http://esp32car.local
 echo.
 
 pause

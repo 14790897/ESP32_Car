@@ -3,6 +3,7 @@
 #include <AsyncTCP.h> // For ESP32
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
+#include <ESPmDNS.h>
 #include "secrets.h" // 包含你的配置 (WiFi凭证, API密钥等)
 
 // --- Pin Definitions ---
@@ -25,6 +26,7 @@ const int MAX_DUTY_CYCLE = (1 << PWM_RESOLUTION) - 1; // 255 for 8-bit
 
 // --- Global Variables ---
 AsyncWebServer server(80); // Web server object on port 80
+const char *mdnsHostname = "esp32car"; // mDNS hostname (will be esp32car.local)
 int motorASpeed = 150;     // Default speed for Motor A (0-255)
 int motorBSpeed = 150;     // Default speed for Motor B (0-255)
 int motorCSpeed = 150;     // Default speed for Motor C (0-255)
@@ -213,6 +215,120 @@ void setMotorSpeed(int speed)
   // Example: if (/* check current moving direction */) { motorForward(); }
 }
 
+// --- Motor Diagnostic Functions ---
+void testMotor(char motor, int speed = 150)
+{
+  Serial.print("Testing Motor ");
+  Serial.print(motor);
+  Serial.print(" at speed ");
+  Serial.println(speed);
+
+  switch (motor)
+  {
+  case 'A':
+    Serial.println("Motor A Forward...");
+    motorA_Forward(speed);
+    delay(2000);
+    Serial.println("Motor A Stop");
+    motorA_Stop();
+    delay(1000);
+    Serial.println("Motor A Backward...");
+    motorA_Backward(speed);
+    delay(2000);
+    Serial.println("Motor A Stop");
+    motorA_Stop();
+    break;
+
+  case 'B':
+    Serial.println("Motor B Forward...");
+    motorB_Forward(speed);
+    delay(2000);
+    Serial.println("Motor B Stop");
+    motorB_Stop();
+    delay(1000);
+    Serial.println("Motor B Backward...");
+    motorB_Backward(speed);
+    delay(2000);
+    Serial.println("Motor B Stop");
+    motorB_Stop();
+    break;
+
+  case 'C':
+    Serial.println("Motor C Forward...");
+    motorC_Forward(speed);
+    delay(2000);
+    Serial.println("Motor C Stop");
+    motorC_Stop();
+    delay(1000);
+    Serial.println("Motor C Backward...");
+    motorC_Backward(speed);
+    delay(2000);
+    Serial.println("Motor C Stop");
+    motorC_Stop();
+    break;
+
+  case 'D':
+    Serial.println("Motor D Forward...");
+    motorD_Forward(speed);
+    delay(2000);
+    Serial.println("Motor D Stop");
+    motorD_Stop();
+    delay(1000);
+    Serial.println("Motor D Backward...");
+    motorD_Backward(speed);
+    delay(2000);
+    Serial.println("Motor D Stop");
+    motorD_Stop();
+    break;
+  }
+  Serial.println("Motor test completed\n");
+}
+
+void testAllMotors()
+{
+  Serial.println("=== Starting Individual Motor Tests ===");
+  testMotor('A');
+  delay(1000);
+  testMotor('B');
+  delay(1000);
+  testMotor('C');
+  delay(1000);
+  testMotor('D');
+  delay(1000);
+  Serial.println("=== All Motor Tests Completed ===");
+}
+
+void printMotorStatus()
+{
+  Serial.println("\n=== Motor Configuration Status ===");
+  Serial.print("Motor A Speed: ");
+  Serial.println(motorASpeed);
+  Serial.print("Motor B Speed: ");
+  Serial.println(motorBSpeed);
+  Serial.print("Motor C Speed: ");
+  Serial.println(motorCSpeed);
+  Serial.print("Motor D Speed: ");
+  Serial.println(motorDSpeed);
+  Serial.println("\nPin Configuration:");
+  Serial.print("IN1 (Motor A+): GPIO ");
+  Serial.println(IN1_PIN);
+  Serial.print("IN2 (Motor A-): GPIO ");
+  Serial.println(IN2_PIN);
+  Serial.print("IN3 (Motor B+): GPIO ");
+  Serial.println(IN3_PIN);
+  Serial.print("IN4 (Motor B-): GPIO ");
+  Serial.println(IN4_PIN);
+  Serial.print("IN5 (Motor C+): GPIO ");
+  Serial.println(IN5_PIN);
+  Serial.print("IN6 (Motor C-): GPIO ");
+  Serial.println(IN6_PIN);
+  Serial.print("IN7 (Motor D+): GPIO ");
+  Serial.println(IN7_PIN);
+  Serial.print("IN8 (Motor D-): GPIO ");
+  Serial.println(IN8_PIN);
+  Serial.println("=====================================\n");
+}
+
 // --- Setup Function ---
 void setup()
 {
@@ -302,10 +418,16 @@ void setup()
   ledcSetup(7, PWM_FREQ, PWM_RESOLUTION);  // Channel 7 for IN8_PIN
   ledcAttachPin(IN7_PIN, 6);
   ledcAttachPin(IN8_PIN, 7);
-
   // Stop motors initially
   motorStop();
   setMotorSpeed(150); // Set initial speed variable from slider default
+
+  // Print motor configuration
+  printMotorStatus();
+
+  // Optional: Uncomment to test each motor individually at startup
+  // WARNING: This will run motors for 8 seconds each!
+  // testAllMotors();
 
   // Connect to Wi-Fi
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD); // Replace with your actual SSID and password
@@ -317,17 +439,44 @@ void setup()
   }
   Serial.println(" Connected!");
 
+  // Initialize mDNS
+  if (!MDNS.begin(mdnsHostname))
+  {
+    Serial.println("Error setting up MDNS responder!");
+  }
+  else
+  {
+    Serial.println("mDNS responder started");
+    Serial.print("Access the car at: http://");
+    Serial.print(mdnsHostname);
+    Serial.println(".local");
+
+    // Add service to mDNS-SD
+    MDNS.addService("http", "tcp", 80);
+    MDNS.addServiceTxt("http", "tcp", "model", "ESP32_Car");
+    MDNS.addServiceTxt("http", "tcp", "version", "1.0");
+    MDNS.addServiceTxt("http", "tcp", "description", "ESP32 DRV8833 Car Control");
+  }
+
   // Print ESP32 Local IP Address
   Serial.print("IP Address: http://");
   Serial.println(WiFi.localIP());
-  // --- Define Web Server Routes ---
-  // Root route: Serve the HTML page from LittleFS
+  // --- Define Web Server Routes ---  // Root route: Serve the HTML page from LittleFS
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { 
               if(LittleFS.exists("/index.html")) {
-                request->send(LittleFS, "/index.html", "text/html");
+                request->send(LittleFS, "/index.html", "text/html; charset=utf-8");
               } else {
                 request->send(404, "text/plain", "index.html not found in LittleFS");
+              } });
+
+  // Diagnostics page
+  server.on("/diagnostics", HTTP_GET, [](AsyncWebServerRequest *request)
+            { 
+              if(LittleFS.exists("/diagnostics.html")) {
+                request->send(LittleFS, "/diagnostics.html", "text/html; charset=utf-8");
+              } else {
+                request->send(404, "text/plain", "diagnostics.html not found in LittleFS");
               } });
 
   // Serve CSS files
@@ -381,12 +530,12 @@ void setup()
             { request->send(LittleFS, "/icons/car.svg", "image/svg+xml"); });
   server.on("/icons/wifi.svg", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(LittleFS, "/icons/wifi.svg", "image/svg+xml"); });
-
   // Status check endpoint for connection monitoring
   server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
     String status = "{";
     status += "\"wifi_connected\":" + String(WiFi.status() == WL_CONNECTED ? "true" : "false") + ",";
     status += "\"ip\":\"" + WiFi.localIP().toString() + "\",";
+    status += "\"mdns_hostname\":\"" + String(mdnsHostname) + ".local\",";
     status += "\"rssi\":" + String(WiFi.RSSI()) + ",";
     status += "\"motor_speeds\":{";
     status += "\"A\":" + String(motorASpeed) + ",";
@@ -416,10 +565,10 @@ void setup()
     motorRight();
     request->send(200, "text/plain", "OK - Right"); });
 
-  server.on("/stop", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/stop", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     motorStop();
     request->send(200, "text/plain", "OK - Stop"); });
-
   // Speed control route
   server.on("/speed", HTTP_GET, [](AsyncWebServerRequest * request) {
     String message;
@@ -433,6 +582,42 @@ void setup()
       message = "ERROR - Missing 'value' parameter";
       request->send(400, "text/plain", message); // Bad Request
     } });
+
+  // Motor diagnostic routes
+  server.on("/test/motor", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    String message = "Motor Test Commands:\n";
+    message += "/test/motor/A - Test Motor A\n";
+    message += "/test/motor/B - Test Motor B\n"; 
+    message += "/test/motor/C - Test Motor C\n";
+    message += "/test/motor/D - Test Motor D\n";
+    message += "/test/motor/all - Test All Motors\n";
+    request->send(200, "text/plain", message); });
+
+  server.on("/test/motor/A", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    testMotor('A');
+    request->send(200, "text/plain", "Motor A test completed - check serial monitor"); });
+
+  server.on("/test/motor/B", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    testMotor('B');
+    request->send(200, "text/plain", "Motor B test completed - check serial monitor"); });
+
+  server.on("/test/motor/C", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    testMotor('C');
+    request->send(200, "text/plain", "Motor C test completed - check serial monitor"); });
+
+  server.on("/test/motor/D", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    testMotor('D');
+    request->send(200, "text/plain", "Motor D test completed - check serial monitor"); });
+
+  server.on("/test/motor/all", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    testAllMotors();
+    request->send(200, "text/plain", "All motor tests completed - check serial monitor"); });
 
   // Not Found handler
   server.onNotFound([](AsyncWebServerRequest *request) {
@@ -450,4 +635,7 @@ void loop()
   // Async server handles requests in the background.
   // Keep loop() clean or use for non-blocking tasks only.
   // Avoid delay() or long-running operations here.
+
+  // Note: ESP32 mDNS runs automatically in background,
+  // no manual update needed unlike ESP8266
 }

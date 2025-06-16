@@ -42,8 +42,9 @@ h2 {
 
 .status {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   color: #4CAF50;
   font-weight: 500;
 }
@@ -51,6 +52,12 @@ h2 {
 .wifi-icon {
   width: 24px;
   height: 24px;
+}
+
+.mdns-info {
+  font-size: 12px;
+  color: #666;
+  font-weight: 400;
 }
 
 .control-panel {
@@ -191,6 +198,29 @@ h2 {
   font-size: 16px;
   color: #666;
   font-weight: 400;
+}
+
+.tools-section {
+  margin-top: 30px;
+}
+
+.diagnostic-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(145deg, #607D8B, #455A64);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.diagnostic-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  background: linear-gradient(145deg, #546E7A, #37474F);
 }
 
 label {

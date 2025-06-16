@@ -72,23 +72,67 @@ Connect your DRV8833 motor drivers according to the pin definitions in `main.cpp
 
 ### 3. Usage
 
-1. Open Serial Monitor to see the ESP32's IP address
+1. Open Serial Monitor to see the ESP32's IP address and mDNS hostname
 2. Connect to the same WiFi network as the ESP32
-3. Open a web browser and navigate to the ESP32's IP address
+3. Open a web browser and navigate to either:
+   - **mDNS Address**: `http://esp32car.local` (recommended)
+   - **IP Address**: `http://192.168.x.x` (shown in serial monitor)
 4. Use the web interface to control the car:
    - Buttons for Forward/Backward/Left/Right/Stop
    - Speed slider (0-255)
    - Keyboard controls (WASD/Arrow keys/Spacebar)
 
+### 4. Motor Troubleshooting
+
+If only one motor is working, check:
+
+1. **Visit Diagnostics Page**: Go to `http://esp32car.local/diagnostics`
+2. **Test Individual Motors**: Use the diagnostic interface to test each motor
+3. **Check Pin Connections**: Verify wiring matches the updated pin configuration:
+
+**Updated Pin Configuration (safer GPIO pins):**
+- Motor A: GPIO 4 (IN1), GPIO 5 (IN2)
+- Motor B: GPIO 16 (IN3), GPIO 17 (IN4)  
+- Motor C: GPIO 18 (IN5), GPIO 19 (IN6)
+- Motor D: GPIO 21 (IN7), GPIO 22 (IN8)
+
+4. **Common Issues**:
+   - Loose connections
+   - DRV8833 power supply issues
+   - Wrong GPIO pin assignments
+   - Motor driver chip failure
+   - Keyboard controls (WASD/Arrow keys/Spacebar)
+
 ## API Endpoints
 
 - `GET /` - Main web interface
+- `GET /status` - Device status and information (JSON)
 - `GET /forward` - Move forward
 - `GET /backward` - Move backward  
 - `GET /left` - Turn left
 - `GET /right` - Turn right
 - `GET /stop` - Stop all motors
 - `GET /speed?value=X` - Set speed (X = 0-255)
+
+## mDNS Support
+
+The ESP32 Car supports mDNS (Multicast DNS) for easy device discovery:
+
+- **Hostname**: `esp32car.local`
+- **Service**: HTTP on port 80
+- **Service Discovery**: The device advertises itself as "ESP32_Car" with additional metadata
+
+### Benefits of mDNS:
+- No need to remember IP addresses
+- Easy access via `http://esp32car.local`
+- Automatic device discovery on the network
+- Works with most modern browsers and operating systems
+
+### Troubleshooting mDNS:
+- **Windows**: Ensure Bonjour service is installed (comes with iTunes or can be installed separately)
+- **macOS/iOS**: Built-in support, should work out of the box
+- **Linux**: Install `avahi-daemon` package
+- **Android**: Most browsers support mDNS, some may need specific apps
 
 ## Development Notes
 

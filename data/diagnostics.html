@@ -1,0 +1,184 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32 Car - Motor Diagnostics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      text-align: center; 
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+      margin-bottom: 30px;
+      display: inline-block;
+      min-width: 400px;
+    }
+    
+    .test-button {
+      display: inline-block;
+      padding: 15px 25px;
+      margin: 10px;
+      background: linear-gradient(145deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .test-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .motor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .motor-a { background: linear-gradient(145deg, #FF5722, #D84315); }
+    .motor-b { background: linear-gradient(145deg, #2196F3, #1976D2); }
+    .motor-c { background: linear-gradient(145deg, #FF9800, #F57C00); }
+    .motor-d { background: linear-gradient(145deg, #9C27B0, #7B1FA2); }
+    
+    .status-box {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      text-align: left;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: linear-gradient(145deg, #607D8B, #455A64);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+      transform: translateY(-2px);
+    }
+      h2 { 
+      color: #333; 
+      margin-bottom: 20px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .tool-icon {
+      font-size: 24px;
+      color: #607D8B;
+      display: inline-block;
+    }
+    
+    h3 { color: #555; margin: 20px 0 10px 0; }
+  </style>
+</head>
+<body>  <div class="container">
+    <h2><span class="tool-icon">&#9881;</span> Motor Diagnostics</h2>
+    
+    <h3>Individual Motor Tests</h3>
+    <div class="motor-grid">
+      <button class="test-button motor-a" onclick="testMotor('A')">Test Motor A</button>
+      <button class="test-button motor-b" onclick="testMotor('B')">Test Motor B</button>
+      <button class="test-button motor-c" onclick="testMotor('C')">Test Motor C</button>
+      <button class="test-button motor-d" onclick="testMotor('D')">Test Motor D</button>
+    </div>
+    
+    <h3>System Tests</h3>
+    <button class="test-button" onclick="testAllMotors()">Test All Motors</button>
+    <button class="test-button" onclick="getStatus()">Get Status</button>
+    
+    <div id="status" class="status-box" style="display: none;"></div>
+    
+    <h3>Pin Configuration</h3>
+    <div class="status-box">
+Motor A: GPIO 4 (IN1), GPIO 5 (IN2)
+Motor B: GPIO 16 (IN3), GPIO 17 (IN4)  
+Motor C: GPIO 18 (IN5), GPIO 19 (IN6)
+Motor D: GPIO 21 (IN7), GPIO 22 (IN8)
+
+&#9888; Check these connections on your ESP32 board
+    </div>
+  </div>
+  
+  <a href="/" class="back-link">← Back to Control</a>
+
+  <script>
+    function showStatus(message) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.style.display = 'block';
+    }
+    
+    function testMotor(motor) {
+      showStatus(`Testing Motor ${motor}... (check serial monitor for details)`);
+      fetch(`/test/motor/${motor}`)
+        .then(response => response.text())
+        .then(text => {
+          showStatus(`Motor ${motor} test completed: ${text}`);
+        })
+        .catch(error => {
+          showStatus(`Error testing Motor ${motor}: ${error}`);
+        });
+    }
+    
+    function testAllMotors() {
+      showStatus('Testing all motors... (this will take about 30 seconds)');
+      fetch('/test/motor/all')
+        .then(response => response.text())
+        .then(text => {
+          showStatus(`All motor tests completed: ${text}`);
+        })
+        .catch(error => {
+          showStatus(`Error testing motors: ${error}`);
+        });
+    }
+    
+    function getStatus() {
+      fetch('/status')
+        .then(response => response.json())
+        .then(data => {
+          const statusText = `Device Status:
+IP: ${data.ip}
+mDNS: ${data.mdns_hostname}
+WiFi: ${data.wifi_connected ? 'Connected' : 'Disconnected'}
+RSSI: ${data.rssi} dBm
+Motor Speeds: A=${data.motor_speeds.A}, B=${data.motor_speeds.B}, C=${data.motor_speeds.C}, D=${data.motor_speeds.D}
+Uptime: ${Math.round(data.uptime / 1000)} seconds`;
+          showStatus(statusText);
+        })
+        .catch(error => {
+          showStatus(`Error getting status: ${error}`);
+        });
+    }
+  </script>
+</body>
+</html>
