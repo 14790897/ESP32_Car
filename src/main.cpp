@@ -161,21 +161,21 @@ void motorBackward()
 
 void motorLeft()
 {
-  // Left side motors backward, right side motors forward
-  motorA_Backward(motorASpeed); // Left front
-  motorC_Backward(motorCSpeed); // Left rear
-  motorB_Forward(motorBSpeed);  // Right front
-  motorD_Forward(motorDSpeed);  // Right rear
-  Serial.println("Turning Left");
-}
-
-void motorRight()
-{
   // Left side motors forward, right side motors backward
   motorA_Forward(motorASpeed);  // Left front
   motorC_Forward(motorCSpeed);  // Left rear
   motorB_Backward(motorBSpeed); // Right front
   motorD_Backward(motorDSpeed); // Right rear
+  Serial.println("Turning Left");
+}
+
+void motorRight()
+{
+  // Left side motors backward, right side motors forward
+  motorA_Backward(motorASpeed); // Left front
+  motorC_Backward(motorCSpeed); // Left rear
+  motorB_Forward(motorBSpeed);  // Right front
+  motorD_Forward(motorDSpeed);  // Right rear
   Serial.println("Turning Right");
 }
 
